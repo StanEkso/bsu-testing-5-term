@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Calculator", "Calculator\Ca
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject1", "TestProject1\TestProject1.csproj", "{9F7FFCDD-4C48-45E6-8C70-C8ADF038A21D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyntaxAnalyze", "SyntaxAnalyze\SyntaxAnalyze.csproj", "{1FCC05A4-8878-412E-9EB1-E85EE27CC335}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject2", "TestProject2\TestProject2.csproj", "{3C03F8F7-3BF2-4183-BCCA-45A8440ED4D7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{9F7FFCDD-4C48-45E6-8C70-C8ADF038A21D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F7FFCDD-4C48-45E6-8C70-C8ADF038A21D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F7FFCDD-4C48-45E6-8C70-C8ADF038A21D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FCC05A4-8878-412E-9EB1-E85EE27CC335}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FCC05A4-8878-412E-9EB1-E85EE27CC335}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FCC05A4-8878-412E-9EB1-E85EE27CC335}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FCC05A4-8878-412E-9EB1-E85EE27CC335}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C03F8F7-3BF2-4183-BCCA-45A8440ED4D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C03F8F7-3BF2-4183-BCCA-45A8440ED4D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C03F8F7-3BF2-4183-BCCA-45A8440ED4D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C03F8F7-3BF2-4183-BCCA-45A8440ED4D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
