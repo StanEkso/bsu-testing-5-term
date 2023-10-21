@@ -20,6 +20,7 @@ public class Tests
         Assert.That(SyntaxAnalyze.Analyzer.IsValidExpression("24 + (3 + 5)"), Is.EqualTo(true));
     }
 
+    [TestCase("2 + 3", true)]
     [TestCase("24 + 3", true)]
     [TestCase("24 + 3 + 9" ,true)]
     [TestCase("24 + 3 + 9" ,true)]

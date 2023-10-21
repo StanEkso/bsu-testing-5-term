@@ -6,92 +6,103 @@ public static class Analyzer
 {
     public static bool IsValidExpression(string expression)
     {
-        CharType? prevCharType = null;
-        for (var i = 0; i < expression.Length; i++)
+        int position = 0;
+        
+        bool hasOperand = ExtractOperand(expression, ref position);
+        
+        if (!hasOperand)
         {
-            char suspect = expression[i];
-            if (IsDigit(suspect))
+            return true;
+        }
+
+        while (position < expression.Length)
+        {
+            SkipBlanks(expression, ref position);
+            bool hasOperator = ExtractOperation(expression, ref position);
+            
+            if (!hasOperator)
             {
-                prevCharType = CharType.Digit;
-                continue;
+                return false;
             }
-
-            if (IsOperator(suspect))
+            
+            SkipBlanks(expression, ref position);
+            
+            bool hasOperand2 = ExtractOperand(expression, ref position);
+            
+            if (!hasOperand2)
             {
-                if (HasPrecedingOperator(prevCharType))
-                {
-                    return false;
-                }
-
-                prevCharType = CharType.Operator;
-                continue;
+                return false;
             }
-
-            if (suspect == ' ')
-            {
-                prevCharType |= CharType.Space;
-                continue;
-            }
-
-            if (suspect == '(')
-            {
-                StringBuilder sb = new();
-                int openerCount = 1;
-
-                i++;
-
-                while (i < expression.Length)
-                {
-                    suspect = expression[i];
-                    if (suspect == '(')
-                    {
-                        openerCount++;
-                    }
-                    
-                    if (suspect == ')')
-                    {
-                        openerCount--;
-                        if (openerCount == 0)
-                        {
-                            break;
-                        }
-                    }
-
-                    i++;
-                    sb.Append(suspect);
-                }
-
-                bool isNestedValid = IsValidExpression(sb.ToString());
-
-                if (!isNestedValid)
-                {
-                    return false;
-                }
-
-                prevCharType = CharType.Digit;
-                
-                continue;
-            }
-
-            return false;
         }
 
         return true;
     }
-    
-    private static bool IsDigit(char @char) => @char is >= '0' and <= '9';
 
-    private static bool IsOperator(char @char)
+    private static bool ExtractOperand(string source, ref int position)
     {
-        char[] operators = { '+', '-', '*', '/' };
+        if (source[position] == '(')
+        {
+            int endPosition = position;
+            if (!ExtractExpression(source, ref endPosition))
+            {
+                return false;
+            }
+            
+            bool isValid = IsValidExpression(source[(position + 2)..endPosition]);
+            if (isValid)
+            {
+                position = endPosition + 1;
+                return true;
+            }
+        }
+        
+        if (ParseNumber(source, ref position))
+        {
+            return true;
+        }
 
-        return operators.Contains(@char);
+        return false;
+    }
+    
+    private static void SkipBlanks(string source, ref int position)
+    {
+        while (position < source.Length && source[position] == ' ')
+        {
+            position++;
+        }
     }
 
-    private static bool HasPrecedingOperator(CharType? charType) => charType switch
+    private static bool ExtractOperation(string source, ref int position)
     {
-        CharType.Operator => true,
-        CharType.Operator | CharType.Space => true,
-        _ => false
-    };
+        if (Validators.IsOperator(source[position]))
+        {
+            position++;
+            return true;
+        }
+
+        return false;
+    }
+    
+    private static bool ExtractExpression(string source, ref int position)
+    {
+        while (position < source.Length && source[position] != ')')
+        {
+            position++;
+        }
+
+        return position < source.Length;
+    }
+
+    private static bool ParseNumber(string expression, ref int position)
+    {
+        StringBuilder number = new();
+        
+        while (position < expression.Length && Validators.IsDigit(expression[position]))
+        {
+            number.Append(expression[position]);
+            position++;
+        }
+
+        return number.Length > 0;
+    }
 }
