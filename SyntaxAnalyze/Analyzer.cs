@@ -7,61 +7,37 @@ public static class Analyzer
     public static bool IsValidExpression(string expression)
     {
         int position = 0;
-        
-        bool hasOperand = ExtractOperand(expression, ref position);
-        
-        if (!hasOperand)
-        {
-            return true;
-        }
+        ExtractExpression(expression, ref position);
 
-        while (position < expression.Length)
-        {
-            SkipBlanks(expression, ref position);
-            bool hasOperator = ExtractOperation(expression, ref position);
-            
-            if (!hasOperator)
-            {
-                return false;
-            }
-            
-            SkipBlanks(expression, ref position);
-            
-            bool hasOperand2 = ExtractOperand(expression, ref position);
-            
-            if (!hasOperand2)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static bool ExtractOperand(string source, ref int position)
-    {
-        if (source[position] == '(')
-        {
-            int endPosition = position;
-            if (!ExtractExpression(source, ref endPosition))
-            {
-                return false;
-            }
-            
-            bool isValid = IsValidExpression(source[(position + 2)..endPosition]);
-            if (isValid)
-            {
-                position = endPosition + 1;
-                return true;
-            }
-        }
-        
-        if (ParseNumber(source, ref position))
+        if (position == expression.Length)
         {
             return true;
         }
 
         return false;
+    }
+    
+    private static bool ExtractExpression(string source, ref int position)
+    {
+        if (!ExtractOperand(source, ref position))
+        {
+            throw new InvalidOperationException();
+        }
+
+        while (source.Length >= position)
+        {
+            if (!ExtractOperation(source, ref position))
+            {
+                return false;
+            }
+
+            if (!ExtractOperand(source, ref position))
+            {
+                throw new InvalidOperationException();
+            }
+        }
+
+        return true;
     }
     
     private static void SkipBlanks(string source, ref int position)
@@ -74,7 +50,43 @@ public static class Analyzer
 
     private static bool ExtractOperation(string source, ref int position)
     {
-        if (Validators.IsOperator(source[position]))
+        SkipBlanks(source, ref position);
+        if (position < source.Length && Validators.IsOperator(source[position]))
+        {
+            position++;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool ExtractOperand(string source, ref int position)
+    {
+        if (Parse(source, ref position, '('))
+        {
+            ExtractExpression(source, ref position);
+
+            if (!Parse(source, ref position, ')'))
+            {
+                throw new InvalidOperationException();
+            }
+
+            return true;
+        }
+
+        if (ParseNumber(source, ref position))
+        {
+            return true;
+        }
+
+        throw new InvalidOperationException();
+    }
+
+    private static bool Parse(string source, ref int position, char symbol)
+    {
+        SkipBlanks(source, ref position);
+
+        if (source[position] == symbol && position < source.Length)
         {
             position++;
             return true;
@@ -83,16 +95,8 @@ public static class Analyzer
         return false;
     }
     
-    private static bool ExtractExpression(string source, ref int position)
-    {
-        while (position < source.Length && source[position] != ')')
-        {
-            position++;
-        }
-
-        return position < source.Length;
-    }
-
+    
+    
     private static bool ParseNumber(string expression, ref int position)
     {
         StringBuilder number = new();
