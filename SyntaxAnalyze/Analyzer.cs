@@ -14,7 +14,7 @@ public static class Analyzer
             return true;
         }
 
-        return false;
+        throw new InvalidOperationException();
     }
     
     private static bool ExtractExpression(string source, ref int position)
@@ -73,8 +73,14 @@ public static class Analyzer
 
             return true;
         }
-
+        
+        
         if (ParseNumber(source, ref position))
+        {
+            return true;
+        }
+        
+        if (ParseVariable(source, ref position))
         {
             return true;
         }
@@ -94,8 +100,40 @@ public static class Analyzer
 
         return false;
     }
-    
-    
+
+    private static bool ParseVariable(string expression, ref int position)
+    {
+        if (position >= expression.Length)
+        {
+            return false;
+        }
+
+        if (!char.IsAscii(expression[position]) && expression[position] != '_')
+        {
+            return false;
+        }
+
+        position++;
+
+        while (position < expression.Length && IsValidVariableSymbol(expression, ref position))
+        {
+            position++;
+        }
+
+        return true;
+    }
+
+    private static bool IsValidVariableSymbol(string expression, ref int position)
+    {
+        if (position >= expression.Length)
+        {
+            return false;
+        }
+
+        char suspect = expression[position];
+
+        return char.IsDigit(suspect) || char.IsAsciiLetter(suspect) || suspect == '_';
+    }
     
     private static bool ParseNumber(string expression, ref int position)
     {
