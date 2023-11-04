@@ -4,6 +4,7 @@ namespace SyntaxAnalyze;
 
 public static class Analyzer
 {
+    private static readonly char[] BlankSymbols = { ' ', '\n', '\t', '\r' };
     public static bool IsValidExpression(string expression)
     {
         int position = 0;
@@ -42,7 +43,7 @@ public static class Analyzer
     
     private static void SkipBlanks(string source, ref int position)
     {
-        while (position < source.Length && source[position] == ' ')
+        while (position < source.Length && BlankSymbols.Contains(source[position]))
         {
             position++;
         }
