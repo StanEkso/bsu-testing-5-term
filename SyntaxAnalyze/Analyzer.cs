@@ -124,7 +124,7 @@ public static class Analyzer
     {
         SkipBlanks(source, ref position);
 
-        if (source[position] == symbol && position < source.Length)
+        if (position < source.Length && source[position] == symbol)
         {
             position++;
             return true;

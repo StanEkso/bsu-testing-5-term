@@ -63,6 +63,8 @@ public class Tests
     }
 
     [TestCase("((24 + 3) 4)")]
+    [TestCase("(24 + 3")]
+    [TestCase("24 + 3)")]
     [TestCase("24 + (3 & 6)")]
     [TestCase("24 + 3y,3")]
     [TestCase("24 + 1_2x + (x_*_y)")]
