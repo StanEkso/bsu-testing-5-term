@@ -34,6 +34,34 @@ public class Tests
         Assert.That(actual, Is.EqualTo(expected));
     }
 
+    [TestCase(
+        """
+        2 + 3 // Hello world
+        // It's test
+        + 4
+        """)]
+    [TestCase(
+        """
+        2 + 3 // Hello world
+        + 4
+        """)]
+    [TestCase(
+        """
+        2 + 3 // Hello world 
+                     // It's test
+        + 4
+        """)]
+    [TestCase(
+        """
+        2 + x3 * 4 // Hello world
+                    // It's test
+        + 4
+        """)]
+    public void AcceptsComments(string expression)
+    {
+        Assert.That(SyntaxAnalyze.Analyzer.IsValidExpression(expression), Is.True);
+    }
+
     [TestCase("((24 + 3) 4)")]
     [TestCase("24 + (3 & 6)")]
     [TestCase("24 + 3y,3")]
