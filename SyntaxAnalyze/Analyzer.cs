@@ -5,7 +5,8 @@ namespace SyntaxAnalyze;
 public static class Analyzer
 {
     private static readonly char[] BlankSymbols = { ' ', '\n', '\t', '\r' };
-    private static readonly string SINGLE_LINE_COMMENT = "//";
+    private const string SingleLineComment = "//";
+
     public static bool IsValidExpression(string expression)
     {
         int position = 0;
@@ -49,7 +50,7 @@ public static class Analyzer
             position++;
         }
 
-        while (source.Substring(position).StartsWith(SINGLE_LINE_COMMENT))
+        while (source.Substring(position).StartsWith(SingleLineComment))
         {
             while (position < source.Length && source[position] != '\n')
             {
@@ -60,6 +61,7 @@ public static class Analyzer
             {
                 position++;
             }
+            
             SkipBlanks(source, ref position);
         }
     }
@@ -80,6 +82,7 @@ public static class Analyzer
     private static bool ExtractOperation(string source, ref int position)
     {
         SkipBlanks(source, ref position);
+        
         if (position < source.Length && Validators.IsOperator(source[position]))
         {
             position++;
