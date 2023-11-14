@@ -21,7 +21,7 @@ public class Analyzer
 {
     private static readonly char[] BlankSymbols = { ' ', '\n', '\t', '\r' };
     private const string SingleLineComment = "//";
-    //static readonly ParseResult null_parseResult = new ParseResult();
+    static readonly ParseResult null_parseResult = new ParseResult();
 
     private ParseResult parseResult = new ParseResult();
 
@@ -95,7 +95,7 @@ public class Analyzer
                 return false;
             }
 
-            if (!ParseOperand(parseResult))
+            if (!ParseOperand(out parseResult))
             {
                 throw new InvalidOperationException();
             }
@@ -132,7 +132,7 @@ public class Analyzer
 
         var parseResult = new ParseResult();
 
-        return ParseExpression(parseResult);
+        return ParseExpression(out parseResult);
 
     }
 
@@ -215,6 +215,8 @@ public class Analyzer
 
     private bool ParseOperand(out ParseResult parseResult)
     {
+        parseResult = new ParseResult();
+        
         if (ParseChar('('))
         {
             ParseExpression(out parseResult);
@@ -234,7 +236,7 @@ public class Analyzer
             return true;
         }
 
-        if (ParseVariable(parseResult))
+        if (ParseVariable(out parseResult))
         {
             //parseResult.typeV = TypesExpr.STR;
             parseResult = GetVar(parseResult.nameV); //, parseResult);
