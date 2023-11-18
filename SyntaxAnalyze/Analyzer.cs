@@ -15,6 +15,22 @@ class ParseResult
     public string nameV = "Undefined";
     public TypesExpr typeV = TypesExpr.UNDEF;
     public double valueV;
+
+    public ParseResult()
+    {
+    }
+    
+    public ParseResult(string name, TypesExpr type, double value)
+    {
+        this.nameV = name;
+        this.typeV = type;
+        this.valueV = value;
+    }
+
+    public ParseResult Clone()
+    {
+        return new ParseResult(this.nameV, this.typeV, this.valueV);
+    }
 }
 
 public class Analyzer
@@ -79,10 +95,10 @@ public class Analyzer
 
 
 
-    private bool ParseExpression(out ParseResult parseResult)
+    private bool ParseExpression(ParseResult parseResult)
     {
         var typeOp1 = TypesExpr.UNDEF;
-        if (!ParseOperand(out parseResult))
+        if (!ParseOperand(parseResult))
         {
             throw new InvalidOperationException();
         }
@@ -95,7 +111,7 @@ public class Analyzer
                 return false;
             }
 
-            if (!ParseOperand(out parseResult))
+            if (!ParseOperand(parseResult))
             {
                 throw new InvalidOperationException();
             }
@@ -132,7 +148,7 @@ public class Analyzer
 
         var parseResult = new ParseResult();
 
-        return ParseExpression(out parseResult);
+        return ParseExpression(parseResult);
 
     }
 
@@ -176,18 +192,22 @@ public class Analyzer
     private bool ParseAssigment()
     {
         var parseResult = new ParseResult();
-        if (!ParseVariable(out parseResult))
+
+        var (variable, name) = ParseVariable(parseResult);
+        
+        if (!variable || name == null)
         {
             return false;
         }
+
+        parseResult.nameV = name;
 
         if (!ParseChar('='))
         {
             return false;
         }
 
-        ParseExpression(out parseResult);
-
+        ParseExpression(parseResult);
 
         if (!ParseChar(';'))
         {
@@ -213,14 +233,11 @@ public class Analyzer
         return false;
     }
 
-    private bool ParseOperand(out ParseResult parseResult)
+    private bool ParseOperand(ParseResult parseResult)
     {
-        // TODO: Should it be initialized?
-        parseResult = new ParseResult();
-        
         if (ParseChar('('))
         {
-            ParseExpression(out parseResult);
+            ParseExpression(parseResult);
 
             if (!ParseChar(')'))
             {
@@ -230,17 +247,19 @@ public class Analyzer
             return true;
         }
 
-
         if (ParseNumber())
         {
             parseResult.typeV = TypesExpr.NUM;
             return true;
         }
 
-        if (ParseVariable(out parseResult))
+        var (variable, str) = ParseVariable(parseResult);
+
+        if (variable && str != null)
         {
-            //parseResult.typeV = TypesExpr.STR;
-            parseResult = GetVar(parseResult.nameV); //, parseResult);
+            // parseResult.typeV = TypesExpr.STR;
+            var parseResultRHS = GetVar(str); //, parseResult);
+            parseResult.typeV = parseResultRHS.typeV;
             return true;
         }
 
@@ -260,18 +279,17 @@ public class Analyzer
         return false;
     }
 
-    private bool ParseVariable(out ParseResult parseResult)
+    private (bool, string?) ParseVariable(ParseResult parseResult)
     {
         SkipBlanks();
-        parseResult = null_parseResult;
         if (position >= expression.Length)
         {
-            return false;
+            return (false, null);
         }
 
         if (!char.IsAscii(expression[position]) && expression[position] != '_')
         {
-            return false;
+            return (false, null);
         }
 
         int p1 = position;
@@ -282,9 +300,7 @@ public class Analyzer
             position++;
         }
 
-        parseResult.nameV = expression.Substring(p1, position - p1);
-
-        return true;
+        return (true, expression.Substring(p1, position - p1));
     }
 
     private ParseResult GetVar(string name)
@@ -295,12 +311,9 @@ public class Analyzer
 
 
     private void AddVar(ParseResult parseResult)
-
     {
-        variables.TryAdd(parseResult.nameV, parseResult);
-        variables.Add(parseResult.nameV, parseResult);
-
-
+        variables.TryAdd(parseResult.nameV, parseResult.Clone());
+        // variables.Add(parseResult.nameV, parseResult.Clone());
     }
 
     private bool IsValidVariableSymbol()
