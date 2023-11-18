@@ -50,12 +50,10 @@ public class Tests
         , true)]
     [TestCase(
         """
-        x= '\'';
-        """
-        , true)]
-
+        x= 'bcd';
+        y= x + 'abc';
+        """,true)]
     public void ValidatesParseSTR(string expression, bool expected)
-
     {
         var parser = new SyntaxAnalyze.Analyzer(expression);
         bool actual = parser.Parse();

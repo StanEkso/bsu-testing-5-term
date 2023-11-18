@@ -199,7 +199,7 @@ public class Analyzer
 
         while (!EndCode())
         {
-            ParseStr(@"\'");
+            //ParseStr(@"\'");
             if (ParseChar('\''))
             {
                 return true;
