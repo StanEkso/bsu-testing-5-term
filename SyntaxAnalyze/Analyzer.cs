@@ -2,15 +2,88 @@
 
 namespace SyntaxAnalyze;
 
-public static class Analyzer
+
+enum TypesExpr
+{
+    UNDEF,
+    NUM,
+    STR
+}
+
+class ParseResult
+{
+    public string nameV = "Undefined";
+    public TypesExpr typeV = TypesExpr.UNDEF;
+    public double valueV;
+
+    public ParseResult()
+    {
+    }
+    
+    public ParseResult(string name, TypesExpr type, double value)
+    {
+        this.nameV = name;
+        this.typeV = type;
+        this.valueV = value;
+    }
+
+    public ParseResult Clone()
+    {
+        return new ParseResult(this.nameV, this.typeV, this.valueV);
+    }
+}
+
+public class Analyzer
 {
     private static readonly char[] BlankSymbols = { ' ', '\n', '\t', '\r' };
     private const string SingleLineComment = "//";
+    static readonly ParseResult null_parseResult = new ParseResult();
 
-    public static bool IsValidExpression(string expression)
+    private ParseResult parseResult = new ParseResult();
+
+    private readonly string expression;
+    private int position;
+    private readonly Dictionary<string, ParseResult> variables = new Dictionary<string, ParseResult>();
+
+    public Analyzer(string expression)
     {
-        int position = 0;
-        ExtractExpression(expression, ref position);
+        this.expression = expression;
+        this.position = 0;
+    }
+
+    public bool Parse()
+    {
+        position = 0;
+
+        bool f;
+
+        do
+        {
+            f = ParseAssigment();
+        }
+        while (f);
+
+        f = EndCode();
+        return f;
+    }
+
+    private bool EndCode()
+    {
+        SkipBlanks();
+
+        if (position == expression.Length)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool IsValidExpression()
+    {
+
+        position = 0;
+
+        ParseExpression();
 
         if (position == expression.Length)
         {
@@ -19,22 +92,31 @@ public static class Analyzer
 
         throw new InvalidOperationException();
     }
-    
-    private static bool ExtractExpression(string source, ref int position)
+
+
+
+    private bool ParseExpression(ParseResult parseResult)
     {
-        if (!ExtractOperand(source, ref position))
+        var typeOp1 = TypesExpr.UNDEF;
+        if (!ParseOperand(parseResult))
         {
             throw new InvalidOperationException();
         }
+        typeOp1 = parseResult.typeV;
 
-        while (source.Length >= position)
+        while (expression.Length >= position)
         {
-            if (!ExtractOperation(source, ref position))
+            if (!ParseOperation())
             {
                 return false;
             }
 
-            if (!ExtractOperand(source, ref position))
+            if (!ParseOperand(parseResult))
+            {
+                throw new InvalidOperationException();
+            }
+
+            if (parseResult.typeV != typeOp1)
             {
                 throw new InvalidOperationException();
             }
@@ -42,35 +124,62 @@ public static class Analyzer
 
         return true;
     }
-    
-    private static void SkipBlanks(string source, ref int position)
+
+    private bool ParseExpression()
     {
-        while (position < source.Length && BlankSymbols.Contains(source[position]))
+        /* if (!ExtractOperand())
+         {
+             throw new InvalidOperationException();
+         }
+
+         while (expression.Length >= position)
+         {
+             if (!ExtractOperation())
+             {
+                 return false;
+             }
+
+             if (!ExtractOperand())
+             {
+                 throw new InvalidOperationException();
+             }
+         }
+        return true; */
+
+        var parseResult = new ParseResult();
+
+        return ParseExpression(parseResult);
+
+    }
+
+    private void SkipBlanks()
+    {
+        while (position < expression.Length && BlankSymbols.Contains(expression[position]))
         {
             position++;
         }
 
-        while (source.Substring(position).StartsWith(SingleLineComment))
+        while (expression.Substring(position).StartsWith(SingleLineComment))
         {
-            while (position < source.Length && source[position] != '\n')
+            while (position < expression.Length && expression[position] != '\n')
             {
                 position++;
             }
 
-            if (position < source.Length)
+            if (position < expression.Length)
             {
                 position++;
             }
-            
-            SkipBlanks(source, ref position);
+
+            SkipBlanks();
         }
     }
 
-    private static bool ParseStr(string source, ref int position, string str)
+    private bool ParseStr(string str)
     {
-        SkipBlanks(source, ref position);
+        SkipBlanks();
 
-        if (source.StartsWith(str))
+        if (expression.StartsWith(str))
         {
             position += str.Length;
             return true;
@@ -79,11 +188,43 @@ public static class Analyzer
         return false;
     }
 
-    private static bool ExtractOperation(string source, ref int position)
+
+    private bool ParseAssigment()
     {
-        SkipBlanks(source, ref position);
+        var parseResult = new ParseResult();
+
+        var (variable, name) = ParseVariable(parseResult);
         
-        if (position < source.Length && Validators.IsOperator(source[position]))
+        if (!variable || name == null)
+        {
+            return false;
+        }
+
+        parseResult.nameV = name;
+
+        if (!ParseChar('='))
+        {
+            return false;
+        }
+
+        ParseExpression(parseResult);
+
+        if (!ParseChar(';'))
+        {
+            throw new InvalidOperationException();
+        }
+
+        AddVar(parseResult);
+
+        return true;
+
+    }
+
+    private bool ParseOperation()
+    {
+        SkipBlanks();
+
+        if (position < expression.Length && Validators.IsOperator(expression[position]))
         {
             position++;
             return true;
@@ -92,39 +233,44 @@ public static class Analyzer
         return false;
     }
 
-    private static bool ExtractOperand(string source, ref int position)
+    private bool ParseOperand(ParseResult parseResult)
     {
-        if (Parse(source, ref position, '('))
+        if (ParseChar('('))
         {
-            ExtractExpression(source, ref position);
+            ParseExpression(parseResult);
 
-            if (!Parse(source, ref position, ')'))
+            if (!ParseChar(')'))
             {
                 throw new InvalidOperationException();
             }
 
             return true;
         }
-        
-        
-        if (ParseNumber(source, ref position))
+
+        if (ParseNumber())
         {
+            parseResult.typeV = TypesExpr.NUM;
             return true;
         }
-        
-        if (ParseVariable(source, ref position))
+
+        var (variable, str) = ParseVariable(parseResult);
+
+        if (variable && str != null)
         {
+            // parseResult.typeV = TypesExpr.STR;
+            var parseResultRHS = GetVar(str); //, parseResult);
+            parseResult.typeV = parseResultRHS.typeV;
             return true;
         }
 
         throw new InvalidOperationException();
     }
 
-    private static bool Parse(string source, ref int position, char symbol)
+    private bool ParseChar(char symbol)
     {
-        SkipBlanks(source, ref position);
+        SkipBlanks();
 
-        if (position < source.Length && source[position] == symbol)
+        if (position < expression.Length && expression[position] == symbol)
         {
             position++;
             return true;
@@ -133,29 +279,44 @@ public static class Analyzer
         return false;
     }
 
-    private static bool ParseVariable(string expression, ref int position)
+    private (bool, string?) ParseVariable(ParseResult parseResult)
     {
+        SkipBlanks();
         if (position >= expression.Length)
         {
-            return false;
+            return (false, null);
         }
 
         if (!char.IsAscii(expression[position]) && expression[position] != '_')
         {
-            return false;
+            return (false, null);
         }
 
+        int p1 = position;
         position++;
 
-        while (position < expression.Length && IsValidVariableSymbol(expression, ref position))
+        while (position < expression.Length && IsValidVariableSymbol())
         {
             position++;
         }
 
-        return true;
+        return (true, expression.Substring(p1, position - p1));
     }
 
-    private static bool IsValidVariableSymbol(string expression, ref int position)
+    private ParseResult GetVar(string name)
+    {
+        return variables[name];
+        //return new ParseResult();
+    }
+
+
+    private void AddVar(ParseResult parseResult)
+    {
+        variables.TryAdd(parseResult.nameV, parseResult.Clone());
+        // variables.Add(parseResult.nameV, parseResult.Clone());
+    }
+
+    private bool IsValidVariableSymbol()
     {
         if (position >= expression.Length)
         {
@@ -166,11 +327,11 @@ public static class Analyzer
 
         return char.IsDigit(suspect) || char.IsAsciiLetter(suspect) || suspect == '_';
     }
-    
-    private static bool ParseNumber(string expression, ref int position)
+
+    private bool ParseNumber()
     {
         StringBuilder number = new();
-        
+
         while (position < expression.Length && Validators.IsDigit(expression[position]))
         {
             number.Append(expression[position]);
