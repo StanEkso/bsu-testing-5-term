@@ -188,6 +188,29 @@ public class Analyzer
         return false;
     }
 
+    private bool ParseString()
+    {
+        SkipBlanks();
+
+        if (!ParseChar('\''))
+        {
+            return false;
+        }
+
+        while (!EndCode())
+        {
+            //ParseStr(@"\'");
+            if (ParseChar('\''))
+            {
+                return true;
+            }
+
+            position++;
+        }
+
+        throw new InvalidOperationException();
+    }
+
 
     private bool ParseAssigment()
     {
@@ -244,6 +267,13 @@ public class Analyzer
                 throw new InvalidOperationException();
             }
 
+            return true;
+        }
+        
+        
+        if (ParseString())
+        {
+            parseResult.typeV = TypesExpr.STR;
             return true;
         }
 
