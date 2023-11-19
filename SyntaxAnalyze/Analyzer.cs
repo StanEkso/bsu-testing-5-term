@@ -6,13 +6,10 @@ public class Analyzer
 {
     private static readonly char[] BlankSymbols = { ' ', '\n', '\t', '\r' };
     private const string SingleLineComment = "//";
-    static readonly ParseResult null_parseResult = new ParseResult();
-
-    private ParseResult parseResult = new ParseResult();
 
     private readonly string expression;
     private int position;
-    private readonly Dictionary<string, ParseResult> variables = new Dictionary<string, ParseResult>();
+    private readonly Dictionary<string, ParseResult> variables = new ();
 
     public Analyzer(string expression)
     {
@@ -96,29 +93,8 @@ public class Analyzer
 
     private bool ParseExpression()
     {
-        /* if (!ExtractOperand())
-         {
-             throw new InvalidOperationException();
-         }
-
-         while (expression.Length >= position)
-         {
-             if (!ExtractOperation())
-             {
-                 return false;
-             }
-
-             if (!ExtractOperand())
-             {
-                 throw new InvalidOperationException();
-             }
-         }
-        return true; */
-
         var parseResult = new ParseResult();
-
         return ParseExpression(parseResult);
-
     }
 
     private void SkipBlanks()
@@ -168,7 +144,6 @@ public class Analyzer
 
         while (!EndCode())
         {
-            //ParseStr(@"\'");
             if (ParseChar('\''))
             {
                 return true;
@@ -256,9 +231,8 @@ public class Analyzer
 
         if (variable && str != null)
         {
-            // parseResult.typeV = TypesExpr.STR;
-            var parseResultRHS = GetVar(str); //, parseResult);
-            parseResult.typeV = parseResultRHS.typeV;
+            var parseResultRhs = GetVar(str);
+            parseResult.typeV = parseResultRhs.typeV;
             return true;
         }
 
@@ -305,14 +279,12 @@ public class Analyzer
     private ParseResult GetVar(string name)
     {
         return variables[name];
-        //return new ParseResult();
     }
 
 
     private void AddVar(ParseResult parseResult)
     {
         variables.TryAdd(parseResult.nameV, parseResult.Clone());
-        // variables.Add(parseResult.nameV, parseResult.Clone());
     }
 
     private bool IsValidVariableSymbol()
