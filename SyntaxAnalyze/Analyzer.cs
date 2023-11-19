@@ -63,12 +63,12 @@ public class Analyzer
 
     private bool ParseExpression(ParseResult parseResult)
     {
-        var typeOp1 = ExpressionType.Undefined;
         if (!ParseOperand(parseResult))
         {
             throw new InvalidOperationException();
         }
-        typeOp1 = parseResult.Type;
+        
+        var expressionType = parseResult.Type;
 
         while (expression.Length >= position)
         {
@@ -82,7 +82,7 @@ public class Analyzer
                 throw new InvalidOperationException();
             }
 
-            if (parseResult.Type != typeOp1)
+            if (parseResult.Type != expressionType)
             {
                 throw new InvalidOperationException();
             }
@@ -118,19 +118,6 @@ public class Analyzer
 
             SkipBlanks();
         }
-    }
-
-    private bool ParseStr(string str)
-    {
-        SkipBlanks();
-
-        if (expression.StartsWith(str))
-        {
-            position += str.Length;
-            return true;
-        }
-
-        return false;
     }
 
     private bool ParseString()
