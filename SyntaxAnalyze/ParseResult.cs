@@ -3,14 +3,14 @@
 public class ParseResult
 {
     public string nameV = "Undefined";
-    public TypesExpr typeV = TypesExpr.Undefined;
+    public ExpressionType typeV = ExpressionType.Undefined;
     public double valueV;
 
     public ParseResult()
     {
     }
     
-    public ParseResult(string name, TypesExpr type, double value)
+    public ParseResult(string name, ExpressionType type, double value)
     {
         this.nameV = name;
         this.typeV = type;

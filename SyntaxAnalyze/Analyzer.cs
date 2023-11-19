@@ -63,7 +63,7 @@ public class Analyzer
 
     private bool ParseExpression(ParseResult parseResult)
     {
-        var typeOp1 = TypesExpr.Undefined;
+        var typeOp1 = ExpressionType.Undefined;
         if (!ParseOperand(parseResult))
         {
             throw new InvalidOperationException();
@@ -217,13 +217,13 @@ public class Analyzer
         
         if (ParseString())
         {
-            parseResult.typeV = TypesExpr.Str;
+            parseResult.typeV = ExpressionType.Str;
             return true;
         }
 
         if (ParseNumber())
         {
-            parseResult.typeV = TypesExpr.Num;
+            parseResult.typeV = ExpressionType.Num;
             return true;
         }
 

@@ -1,6 +1,6 @@
 ﻿namespace SyntaxAnalyze;
 
-public enum TypesExpr
+public enum ExpressionType
 {
     Undefined,
     Num,
