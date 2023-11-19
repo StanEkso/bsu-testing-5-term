@@ -2,23 +2,38 @@
 
 public class ParseResult
 {
-    public string nameV = "Undefined";
-    public ExpressionType typeV = ExpressionType.Undefined;
-    public double valueV;
-
     public ParseResult()
     {
+        this.Name = "Undefined";
     }
     
     public ParseResult(string name, ExpressionType type, double value)
     {
-        this.nameV = name;
-        this.typeV = type;
-        this.valueV = value;
+        this.Name = name;
+        this.Type = type;
+        this.Value = value;
+    }
+
+    public string Name
+    {
+        get;
+        set;
+    }
+
+    public ExpressionType Type
+    {
+        get;
+        set;
+    }
+
+    public double Value
+    {
+        get;
+        set;
     }
 
     public ParseResult Clone()
     {
-        return new ParseResult(this.nameV, this.typeV, this.valueV);
+        return new ParseResult(this.Name, this.Type, this.Value);
     }
 }

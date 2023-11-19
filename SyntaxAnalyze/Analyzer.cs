@@ -68,7 +68,7 @@ public class Analyzer
         {
             throw new InvalidOperationException();
         }
-        typeOp1 = parseResult.typeV;
+        typeOp1 = parseResult.Type;
 
         while (expression.Length >= position)
         {
@@ -82,7 +82,7 @@ public class Analyzer
                 throw new InvalidOperationException();
             }
 
-            if (parseResult.typeV != typeOp1)
+            if (parseResult.Type != typeOp1)
             {
                 throw new InvalidOperationException();
             }
@@ -167,7 +167,7 @@ public class Analyzer
             return false;
         }
 
-        parseResult.nameV = name;
+        parseResult.Name = name;
 
         if (!ParseChar('='))
         {
@@ -217,13 +217,13 @@ public class Analyzer
         
         if (ParseString())
         {
-            parseResult.typeV = ExpressionType.Str;
+            parseResult.Type = ExpressionType.Str;
             return true;
         }
 
         if (ParseNumber())
         {
-            parseResult.typeV = ExpressionType.Num;
+            parseResult.Type = ExpressionType.Num;
             return true;
         }
 
@@ -232,7 +232,7 @@ public class Analyzer
         if (variable && str != null)
         {
             var parseResultRhs = GetVar(str);
-            parseResult.typeV = parseResultRhs.typeV;
+            parseResult.Type = parseResultRhs.Type;
             return true;
         }
 
@@ -284,7 +284,7 @@ public class Analyzer
 
     private void AddVar(ParseResult parseResult)
     {
-        variables.TryAdd(parseResult.nameV, parseResult.Clone());
+        variables.TryAdd(parseResult.Name, parseResult.Clone());
     }
 
     private bool IsValidVariableSymbol()
