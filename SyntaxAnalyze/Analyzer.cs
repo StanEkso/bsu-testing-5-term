@@ -2,37 +2,6 @@
 
 namespace SyntaxAnalyze;
 
-
-enum TypesExpr
-{
-    UNDEF,
-    NUM,
-    STR
-}
-
-class ParseResult
-{
-    public string nameV = "Undefined";
-    public TypesExpr typeV = TypesExpr.UNDEF;
-    public double valueV;
-
-    public ParseResult()
-    {
-    }
-    
-    public ParseResult(string name, TypesExpr type, double value)
-    {
-        this.nameV = name;
-        this.typeV = type;
-        this.valueV = value;
-    }
-
-    public ParseResult Clone()
-    {
-        return new ParseResult(this.nameV, this.typeV, this.valueV);
-    }
-}
-
 public class Analyzer
 {
     private static readonly char[] BlankSymbols = { ' ', '\n', '\t', '\r' };
@@ -97,7 +66,7 @@ public class Analyzer
 
     private bool ParseExpression(ParseResult parseResult)
     {
-        var typeOp1 = TypesExpr.UNDEF;
+        var typeOp1 = TypesExpr.Undefined;
         if (!ParseOperand(parseResult))
         {
             throw new InvalidOperationException();
@@ -273,13 +242,13 @@ public class Analyzer
         
         if (ParseString())
         {
-            parseResult.typeV = TypesExpr.STR;
+            parseResult.typeV = TypesExpr.Str;
             return true;
         }
 
         if (ParseNumber())
         {
-            parseResult.typeV = TypesExpr.NUM;
+            parseResult.typeV = TypesExpr.Num;
             return true;
         }
 
