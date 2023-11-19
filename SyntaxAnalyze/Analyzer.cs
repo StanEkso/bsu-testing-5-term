@@ -2,48 +2,14 @@
 
 namespace SyntaxAnalyze;
 
-
-enum TypesExpr
-{
-    UNDEF,
-    NUM,
-    STR
-}
-
-class ParseResult
-{
-    public string nameV = "Undefined";
-    public TypesExpr typeV = TypesExpr.UNDEF;
-    public double valueV;
-
-    public ParseResult()
-    {
-    }
-    
-    public ParseResult(string name, TypesExpr type, double value)
-    {
-        this.nameV = name;
-        this.typeV = type;
-        this.valueV = value;
-    }
-
-    public ParseResult Clone()
-    {
-        return new ParseResult(this.nameV, this.typeV, this.valueV);
-    }
-}
-
 public class Analyzer
 {
     private static readonly char[] BlankSymbols = { ' ', '\n', '\t', '\r' };
     private const string SingleLineComment = "//";
-    static readonly ParseResult null_parseResult = new ParseResult();
-
-    private ParseResult parseResult = new ParseResult();
 
     private readonly string expression;
     private int position;
-    private readonly Dictionary<string, ParseResult> variables = new Dictionary<string, ParseResult>();
+    private readonly Dictionary<string, ParseResult> variables = new ();
 
     public Analyzer(string expression)
     {
@@ -97,12 +63,12 @@ public class Analyzer
 
     private bool ParseExpression(ParseResult parseResult)
     {
-        var typeOp1 = TypesExpr.UNDEF;
         if (!ParseOperand(parseResult))
         {
             throw new InvalidOperationException();
         }
-        typeOp1 = parseResult.typeV;
+        
+        var expressionType = parseResult.Type;
 
         while (expression.Length >= position)
         {
@@ -116,7 +82,7 @@ public class Analyzer
                 throw new InvalidOperationException();
             }
 
-            if (parseResult.typeV != typeOp1)
+            if (parseResult.Type != expressionType)
             {
                 throw new InvalidOperationException();
             }
@@ -127,29 +93,8 @@ public class Analyzer
 
     private bool ParseExpression()
     {
-        /* if (!ExtractOperand())
-         {
-             throw new InvalidOperationException();
-         }
-
-         while (expression.Length >= position)
-         {
-             if (!ExtractOperation())
-             {
-                 return false;
-             }
-
-             if (!ExtractOperand())
-             {
-                 throw new InvalidOperationException();
-             }
-         }
-        return true; */
-
         var parseResult = new ParseResult();
-
         return ParseExpression(parseResult);
-
     }
 
     private void SkipBlanks()
@@ -175,19 +120,6 @@ public class Analyzer
         }
     }
 
-    private bool ParseStr(string str)
-    {
-        SkipBlanks();
-
-        if (expression.StartsWith(str))
-        {
-            position += str.Length;
-            return true;
-        }
-
-        return false;
-    }
-
     private bool ParseString()
     {
         SkipBlanks();
@@ -199,7 +131,6 @@ public class Analyzer
 
         while (!EndCode())
         {
-            //ParseStr(@"\'");
             if (ParseChar('\''))
             {
                 return true;
@@ -216,14 +147,14 @@ public class Analyzer
     {
         var parseResult = new ParseResult();
 
-        var (variable, name) = ParseVariable(parseResult);
+        var (variable, name) = ParseVariable();
         
         if (!variable || name == null)
         {
             return false;
         }
 
-        parseResult.nameV = name;
+        parseResult.Name = name;
 
         if (!ParseChar('='))
         {
@@ -273,23 +204,22 @@ public class Analyzer
         
         if (ParseString())
         {
-            parseResult.typeV = TypesExpr.STR;
+            parseResult.Type = ExpressionType.Str;
             return true;
         }
 
         if (ParseNumber())
         {
-            parseResult.typeV = TypesExpr.NUM;
+            parseResult.Type = ExpressionType.Num;
             return true;
         }
 
-        var (variable, str) = ParseVariable(parseResult);
+        var (variable, str) = ParseVariable();
 
         if (variable && str != null)
         {
-            // parseResult.typeV = TypesExpr.STR;
-            var parseResultRHS = GetVar(str); //, parseResult);
-            parseResult.typeV = parseResultRHS.typeV;
+            var parseResultRhs = GetVar(str);
+            parseResult.Type = parseResultRhs.Type;
             return true;
         }
 
@@ -309,7 +239,7 @@ public class Analyzer
         return false;
     }
 
-    private (bool, string?) ParseVariable(ParseResult parseResult)
+    private (bool, string?) ParseVariable()
     {
         SkipBlanks();
         if (position >= expression.Length)
@@ -336,14 +266,12 @@ public class Analyzer
     private ParseResult GetVar(string name)
     {
         return variables[name];
-        //return new ParseResult();
     }
 
 
     private void AddVar(ParseResult parseResult)
     {
-        variables.TryAdd(parseResult.nameV, parseResult.Clone());
-        // variables.Add(parseResult.nameV, parseResult.Clone());
+        variables.TryAdd(parseResult.Name, parseResult.Clone());
     }
 
     private bool IsValidVariableSymbol()
