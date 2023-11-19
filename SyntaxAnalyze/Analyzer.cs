@@ -160,7 +160,7 @@ public class Analyzer
     {
         var parseResult = new ParseResult();
 
-        var (variable, name) = ParseVariable(parseResult);
+        var (variable, name) = ParseVariable();
         
         if (!variable || name == null)
         {
@@ -227,7 +227,7 @@ public class Analyzer
             return true;
         }
 
-        var (variable, str) = ParseVariable(parseResult);
+        var (variable, str) = ParseVariable();
 
         if (variable && str != null)
         {
@@ -252,7 +252,7 @@ public class Analyzer
         return false;
     }
 
-    private (bool, string?) ParseVariable(ParseResult parseResult)
+    private (bool, string?) ParseVariable()
     {
         SkipBlanks();
         if (position >= expression.Length)
