@@ -4,5 +4,6 @@ public enum ExpressionType
 {
     Undefined,
     Num,
-    Str
+    Str,
+    Bool,
 }
