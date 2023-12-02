@@ -1,4 +1,4 @@
-﻿namespace SyntaxAnalyze;
+﻿namespace DomainLibrary;
 
 public class FuncDef
 {

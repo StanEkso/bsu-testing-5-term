@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using DomainLibrary;
 
 namespace SyntaxAnalyze;
 
@@ -94,10 +95,12 @@ public class Analyzer
         ParseOperators();
 
         f = EndCode();
+        
         if (!f)
         {
             StopOnError("expected End Of Code."); return false;
         }
+        
         return f;
     }
 
@@ -120,6 +123,7 @@ public class Analyzer
         {
             StopOnError("qqqError"); return false;
         }
+        
         return true;
     }
 
@@ -133,15 +137,18 @@ public class Analyzer
         if (!ParseChar(';'))
         {
             ParseExpression();
+            
             if (!ParseChar(';'))
             {
-                StopOnError("qqqError"); return false;
+                StopOnError("qqqError");
+                return false;
             }
         }
+        
         return true;
     }
 
-    public bool ParseIf()
+    private bool ParseIf()
     {
         if (!ParseKeyWord("if"))
         {
@@ -152,23 +159,25 @@ public class Analyzer
 
         if (!ParseChar('{'))
         {
-            StopOnError("Expacted '{' arter if"); return false;
+            StopOnError("Expected '{' after if"); return false;
         }
+        
         ParseOperators();
+        
         if (!ParseChar('}'))
         {
-            StopOnError("Expacted '{' arter if"); return false;
+            StopOnError("Expected '{' after if"); return false;
         }
      
         if (ParseKeyWord("else"))
         {
-
             if (ParseChar('{'))
             {
                 ParseOperators();
+                
                 if (!ParseChar('}'))
                 {
-                    StopOnError("Expacted '}' arter else"); return false;
+                    StopOnError("Expected '}' after else"); return false;
                 }
             }
             else
@@ -176,8 +185,8 @@ public class Analyzer
                 ParseIf();
             }
         }
+        
         return true;
-      
     }
 
     public bool ParseWhile()
