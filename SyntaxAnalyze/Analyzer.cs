@@ -14,6 +14,7 @@ public class Analyzer
     private readonly Dictionary<string, VariableDef> variables = new();
     private readonly Dictionary<string, FuncDef> functions = new();
     private string? _funcName;
+    private List<Token> _tokens = new ();
 
     private string? error;
     public string? Error { get => error; }
@@ -145,7 +146,19 @@ public class Analyzer
             }
         }
         
+        this.AddToken(TokenType.Return, null);
+        
         return true;
+    }
+
+    private void AddToken(TokenType type, int position)
+    {
+        this._tokens.Add(new Token(type, position));
+    }
+
+    private void AddToken(TokenType type, string name)
+    {
+        this._tokens.Add(new Token(type, name));
     }
 
     private bool ParseIf()
@@ -270,14 +283,6 @@ public class Analyzer
 
     private int ParseFunctionHeader()
     {
-        /*
-        var func = GetVar(funcName);
-        if (func.Operation != "func")
-        {
-            return false;
-        }
-        */
-
         string? funcName = ParseVariable();
         if (funcName == null)
         {
@@ -300,9 +305,11 @@ public class Analyzer
             do
             {
                 name = ParseVariable();
+                
                 if (name == null)
                 {
-                    StopOnError("qqqError"); return -1;
+                    StopOnError("qqqError");
+                    return -1;
                 }
 
                 AddFuncVar(name, funcName);
@@ -316,6 +323,7 @@ public class Analyzer
         {
             StopOnError("qqqError"); return -1;
         }
+        
         return argcount;
     }
 
