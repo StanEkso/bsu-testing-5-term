@@ -1,4 +1,6 @@
-﻿namespace Calculator;
+﻿using SyntaxAnalyze;
+
+namespace Calculator;
 
 public static class Calculator
 {

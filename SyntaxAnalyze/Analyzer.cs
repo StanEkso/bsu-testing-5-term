@@ -16,6 +16,8 @@ public class Analyzer
 
     private string? error;
     public string? Error { get => error; }
+    
+    public static List<Token> ListOfTokens = new List<Token>(); 
 
     internal class ParserException : ApplicationException
     {
@@ -452,8 +454,9 @@ public class Analyzer
             return '\0';
     }
 
-    private bool ParseString()
+    private bool ParseString(out dynamic value)
     {
+        value = String.Empty;
         SkipBlanks();
 
         bool Escape = true;
@@ -496,6 +499,7 @@ public class Analyzer
             else if (CurrentChar() == '\'')
             {
                 position++;
+                value = expression[pos1..position];
                 return true;
             }
 
@@ -525,7 +529,7 @@ public class Analyzer
             }
             return false;
         }
-
+        
         ParseExpression();
 
         if (!varOnly && !ParseChar(';'))
@@ -533,6 +537,7 @@ public class Analyzer
             StopOnError("qqqError"); return false;
         }
 
+        
         AddVar(name, _funcName);
 
         return true;
@@ -559,6 +564,7 @@ public class Analyzer
             return false;
         }
         var operation = expression[p1..position];
+        ListOfTokens.Add(new TokenOperation(operation));
         return true;
     }
 
@@ -601,6 +607,7 @@ public class Analyzer
             return false;
         }
         var operation = expression[p1..position];
+        ListOfTokens.Add(new TokenOperation(operation));
         return true;
 
         //SkipBlanks();
@@ -633,14 +640,14 @@ public class Analyzer
             }
         }
 
-        if (type1 == ExpressionType.Num)
+        if (type1 == ExpressionType.Float || type1 == ExpressionType.Int)
         {
             if (operation == "++" || operation == "--")
             {
                 return type1;
             }
 
-            if (type2 == ExpressionType.Num)
+            if (type2 == ExpressionType.Float  || type2 == ExpressionType.Int)
             {
                 if (operation == "+"
                     || operation == "-"
@@ -653,6 +660,7 @@ public class Analyzer
                 }
             }
         }
+        
 
         if (type1 == ExpressionType.Bool)
         {
@@ -678,6 +686,7 @@ public class Analyzer
     {
         if (ParseChar('('))
         {
+            ListOfTokens.Add(new TokenOperation("("));
             ParseExpression();
 
             if (!ParseChar(')'))
@@ -685,17 +694,22 @@ public class Analyzer
                 StopOnError("qqqError"); return false;
             }
 
+            ListOfTokens.Add(new TokenOperation(")"));
             return true;
         }
 
-        if (ParseString())
+        dynamic value;
+        if (ParseString(out value))
         {
+            ListOfTokens.Add(new TokenValue(new Value(value)));
             //Type = ExpressionType.Str;
             return true;
         }
 
-        if (ParseNumber())
+        
+        if (ParseNumber(out value))
         {
+            ListOfTokens.Add(new TokenValue(new Value(value)));
             //Type = ExpressionType.Num;
             return true;
         }
@@ -729,6 +743,8 @@ public class Analyzer
             StopOnError("qqqError"); return false;
         }
 
+        ListOfTokens.Add(new TokenGetLocalVariable(name));
+        
         return true;
     }
 
@@ -854,16 +870,28 @@ public class Analyzer
         return v;
     }
 
-    private bool ParseNumber()
+    private bool ParseNumber(out dynamic value)
     {
         StringBuilder number = new();
 
+        value = 0;
         while (position < expression.Length && Validators.IsDigit(expression[position]))
         {
             number.Append(expression[position]);
             position++;
         }
 
+        if (number.Length > 0)
+        {
+            if (number.ToString().Contains("."))
+            {
+                value = float.Parse(number.ToString());
+            }
+            else
+            {
+                value = int.Parse(number.ToString());
+            }
+        }
         return number.Length > 0;
     }
 }

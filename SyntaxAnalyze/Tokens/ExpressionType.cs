@@ -3,7 +3,8 @@
 public enum ExpressionType
 {
     Undefined,
-    Num,
-    Str,
+    Int,
+    Float,
+    String,
     Bool,
 }
