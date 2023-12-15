@@ -39,34 +39,6 @@ public class TokenOperation : Token
     }
 }
 
-public class TokenLocalVariable : Token
-{
-    private string _name;
-    private Value _value;
-
-    public TokenLocalVariable(): base(TokenType.LocalVariable)
-    {
-    }
-
-    public TokenLocalVariable(string name, Value value) : base(TokenType.LocalVariable)
-    {
-        this._name = name;
-        _value = value;
-    }
-
-    public string Name
-    {
-        get => _name;
-        set => _name = value ?? throw new ArgumentNullException(nameof(value));
-    }
-
-    public Value Value
-    {
-        get => _value;
-        set => _value = value ?? throw new ArgumentNullException(nameof(value));
-    }
-}
-
 public class TokenGetLocalVariable : Token
 {
     private string _name;
@@ -90,16 +62,21 @@ public class TokenGetLocalVariable : Token
 public class TokenSetLocalVariable : Token
 {
     private string _name;
-    private Value _newValue;
+    private int _numberOfTokensAfter;
 
     public TokenSetLocalVariable(): base(TokenType.SetLocalVariable)
     {
     }
 
-    public TokenSetLocalVariable(string name, Value value) : base(TokenType.SetLocalVariable)
+    public TokenSetLocalVariable(string name) : base(TokenType.SetLocalVariable)
     {
         this._name = name;
-        _newValue = value;
+        _numberOfTokensAfter = -1;
+    }
+    public TokenSetLocalVariable(string name, int numberOfTokensAfter) : base(TokenType.SetLocalVariable)
+    {
+        this._name = name;
+        _numberOfTokensAfter = numberOfTokensAfter;
     }
 
     public string Name
@@ -108,9 +85,42 @@ public class TokenSetLocalVariable : Token
         set => _name = value ?? throw new ArgumentNullException(nameof(value));
     }
     
-    public Value NewValue
+    public int NumberOfTokensAfter
     {
-        get => _newValue;
-        set => _newValue = value ?? throw new ArgumentNullException(nameof(value));
+        get => _numberOfTokensAfter;
+        set => _numberOfTokensAfter = value;
+    }
+}
+
+public class TokenGoto : Token
+{
+    private int _TokenToGo;
+    private int _numOfTokens;
+
+    public TokenGoto()
+    {
+    }
+    
+    public TokenGoto(int tokenToGo)
+    {
+        _TokenToGo = tokenToGo;
+    }
+
+    public TokenGoto(int tokenToGo, int numOfTokens)
+    {
+        _TokenToGo = tokenToGo;
+        this._numOfTokens = numOfTokens;
+    }
+
+    public int PositionToGo
+    {
+        get => _TokenToGo;
+        set => _TokenToGo = value;
+    }
+
+    public int NumOfTokens
+    {
+        get => _numOfTokens;
+        set => _numOfTokens = value;
     }
 }

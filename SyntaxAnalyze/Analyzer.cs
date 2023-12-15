@@ -112,9 +112,16 @@ public class Analyzer
 
         do
         {
-            if (!ParseAssigment(true))
+            int numOfTokens;
+            int currentPosInList = ListOfTokens.Count;
+            if (!ParseAssigment(out numOfTokens,true))
             {
                 StopOnError("qqqError"); return false;
+            }
+            if (numOfTokens > 0)
+            {
+                TokenSetLocalVariable tokenLocalVariable = (TokenSetLocalVariable)ListOfTokens.ElementAt(currentPosInList);
+                tokenLocalVariable.NumberOfTokensAfter = numOfTokens;
             }
         } while (ParseChar(','));
 
@@ -225,7 +232,14 @@ public class Analyzer
             }
             if (!f)
             {
-                f = ParseAssigment();
+                int numOfTokens;
+                int currentPosInList = ListOfTokens.Count;
+                f = ParseAssigment(out numOfTokens);
+                if (f && numOfTokens > 0)
+                {
+                    TokenSetLocalVariable tokenLocalVariable = (TokenSetLocalVariable)ListOfTokens.ElementAt(currentPosInList);
+                    tokenLocalVariable.NumberOfTokensAfter = numOfTokens;
+                }
             }
 
         }
@@ -250,7 +264,11 @@ public class Analyzer
             StopOnError("qqqError"); return false;
         }
 
+        int currentTokenPos = ListOfTokens.Count;
+        ListOfTokens.Add(new TokenGoto(currentTokenPos + 1));
         ParseOperators();
+        TokenGoto token = (TokenGoto)ListOfTokens.ElementAt(currentTokenPos);
+        token.NumOfTokens = ListOfTokens.Count - currentTokenPos - 1;
 
         if (!ParseChar('}'))
         {
@@ -511,14 +529,16 @@ public class Analyzer
 
 
     // is used also in var declaration
-    private bool ParseAssigment(bool varOnly = false)
+    private bool ParseAssigment(out int numOfTokens, bool varOnly = false)
     {
         string? name = ParseVariable();
-
+        numOfTokens = -1;
+        int currentNumberOfTokens = ListOfTokens.Count;
         if (name == null)
         {
             return false;
         }
+        ListOfTokens.Add(new TokenSetLocalVariable(name));
 
         if (!ParseChar('='))
         {
@@ -530,13 +550,18 @@ public class Analyzer
             return false;
         }
         
+        
         ParseExpression();
 
-        if (!varOnly && !ParseChar(';'))
+        if (!varOnly)
         {
-            StopOnError("qqqError"); return false;
+            if (!ParseChar(';'))
+            {
+                StopOnError("qqqError"); return false;
+            }
         }
 
+        numOfTokens = ListOfTokens.Count - currentNumberOfTokens - 1;
         
         AddVar(name, _funcName);
 
@@ -893,5 +918,15 @@ public class Analyzer
             }
         }
         return number.Length > 0;
+    }
+
+    public static List<Token> GetListOfTokens()
+    {
+        return ListOfTokens;
+    }
+
+    public static void ResetTokens()
+    {
+        ListOfTokens.Clear();
     }
 }

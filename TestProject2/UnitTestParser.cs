@@ -1,3 +1,4 @@
+using SyntaxAnalyze;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TestParser;
@@ -201,6 +202,204 @@ public class Tests
         bool actual = parser.Parse();
 
         Assert.That(actual, Is.EqualTo(expected));
+    }
+    
+[TestCase("x=14+4;", 1,new int[]{3},true)]
+    [TestCase(
+        """
+        x=14+4;
+        x=x;
+        """
+      , 2,new int[]{3,1},true)]
+    [TestCase(
+        """
+        x= 14 + 4;
+        y= x + 1;
+        z = 0;
+        z = 10;
+        """
+      , 4,new int[]{3,3,1,1},true)]
+    [TestCase(
+        """
+        x= 14 + 4;
+        y= x*(1+2/3) + 1;
+        """
+        , 2,new int[]{3,11},true)]
+[TestCase(
+    """
+    if(15 + 5){}
+    """
+    , 0,new int[]{},true)]
+[TestCase(
+    """
+    while (1==1){
+    if(1==2){}
+    }
+    """
+    , 0,new int[]{},true)]
+[TestCase(
+    """
+    while (1==1){
+     if(1==1){
+    x=1;
+    } else{
+    x=2;
+    }
+    }
+    """
+    , 2,new int[]{1,1},true)]
+[TestCase(
+    "x= 'abc';"
+    , 1,new int[]{1},true)]
+[TestCase(
+    """
+    x= 'abc';
+    while (x==1){
+     if(1==1){
+    y=x;
+    } else{
+    x='a';
+    }
+    }
+    """
+    , 3,new int[]{1,1,1},true)]
+[TestCase(
+    """
+    var x= 14 + 4;
+    y= x*(1+2/3) + 1;
+    """
+    , 2,new int[]{3,11},true)]
+[TestCase(
+    """
+    var x= 14 + 4;
+    var y= x;
+    var z =6;
+    z = x;
+    """
+    , 4,new int[]{3,1,1,1},true)]
+
+    public void ValidatesTokensSetLocalVariable(string expression, int numOfSets, int[] numInNewValue, bool expected)
+    {
+        SyntaxAnalyze.Analyzer.ResetTokens();
+        var parser = new SyntaxAnalyze.Analyzer(expression);
+        bool isValidAnalyze = parser.Parse();
+        List<SyntaxAnalyze.Token> setsList = SyntaxAnalyze.Analyzer.GetListOfTokens().FindAll(token => token._type == TokenType.SetLocalVariable);
+        bool isValidSets = numOfSets == setsList.Count;
+        bool isValidValues = true;
+        TokenSetLocalVariable token;
+        for (int i = 0; i < numInNewValue.Length;i++)
+        {
+            token = (TokenSetLocalVariable)setsList.ElementAt(i);
+            isValidValues = numInNewValue[i] == token.NumberOfTokensAfter;
+            if (!isValidValues)
+            {
+                break;
+            }
+        }
+        Assert.That(isValidAnalyze && isValidSets && isValidValues, Is.EqualTo(expected));
+    }
+    
+    [TestCase("x=14+4;", 3,true)]
+    [TestCase(
+        """
+        x=14+4;
+        x=x;
+        """
+        , 3,true)]
+    [TestCase(
+        """
+        x= 14 + 4;
+        y= x + 1;
+        z = 0;
+        z = 10;
+        """
+        , 7,true)]
+    [TestCase(
+        """
+        x= 14 + 4*( 19-7)+16/(9-3);
+        """
+        , 17,true)]
+    [TestCase(
+        """
+        x=1;
+        x=x;
+        """
+        , 1,true)]
+    [TestCase(
+        """
+        if(15){}
+        """
+        , 3,true)]
+    [TestCase(
+        """
+        while (1==1){
+        if(1==2){}
+        }
+        """
+        , 10,true)]
+    public void ValidatesTokensExpression(string expression, int numOfOpersAndValues, bool expected)
+    {
+        SyntaxAnalyze.Analyzer.ResetTokens();
+        var parser = new SyntaxAnalyze.Analyzer(expression);
+        bool isValidAnalyze = parser.Parse();
+        int count = SyntaxAnalyze.Analyzer.GetListOfTokens().FindAll(token => token._type == TokenType.Operation || token._type == TokenType.Value).Count;
+        Assert.That(isValidAnalyze && count == numOfOpersAndValues, Is.EqualTo(expected));
+    }
+    
+    [TestCase("x=14+4;", 0,true)]
+    [TestCase(
+        """
+        x=14+4;
+        x=x-x;
+        """
+        , 2,true)]
+    [TestCase(
+        """
+        x= 14 + 4;
+        y= x + 1;
+        z = y + x;
+        z = z - y;
+        """
+        , 5,true)]
+    [TestCase(
+        """
+        y=15;
+        x= 14 + 4*(y-7)+y/(9-3);
+        """
+        , 2,true)]
+    [TestCase(
+        """
+        x=1;
+        x=x;
+        """
+        , 1,true)]
+    [TestCase(
+        """
+        if(15){}
+        """
+        , 0,true)]
+    [TestCase(
+        """
+        while (1==1){
+        if(1==2){}
+        }
+        """
+        , 0,true)]
+    [TestCase(
+        """
+        x=1;
+        while (1==1){
+        if(x==2){}
+        }
+        """
+        , 1,true)]
+    public void ValidatesTokensGetLocalVariable(string expression, int numOfLocalVars, bool expected)
+    {
+        SyntaxAnalyze.Analyzer.ResetTokens();
+        var parser = new SyntaxAnalyze.Analyzer(expression);
+        bool isValidAnalyze = parser.Parse();
+        int count = SyntaxAnalyze.Analyzer.GetListOfTokens().FindAll(token => token._type == TokenType.GetLocalVariable).Count;
+        Assert.That(isValidAnalyze && count == numOfLocalVars, Is.EqualTo(expected));
     }
 
     [TestCase(
