@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using SyntaxAnalyze.Tokens;
 
 namespace SyntaxAnalyze;
 
@@ -16,6 +17,8 @@ public class Analyzer
 
     private string? error;
     public string? Error { get => error; }
+
+    private Compiler comp = new Compiler();
 
     internal class ParserException : ApplicationException
     {
@@ -122,6 +125,28 @@ public class Analyzer
         }
         return true;
     }
+    
+    public VariableDef GetParsedVar()
+    {
+        if (!ParseWordAndBlank("var"))
+        {
+            throw new Exception();
+        }
+
+        do
+        {
+            if (!ParseAssigment(true))
+            {
+                throw new Exception();
+            }
+        } while (ParseChar(','));
+
+        if (!ParseChar(';'))
+        {
+            StopOnError("qqqError");throw new Exception();
+        }
+        return new VariableDef("name");
+    }
 
     public bool ParseReturn()
     {
@@ -147,9 +172,9 @@ public class Analyzer
         {
             return false;
         }
-
+    
         ParseExpression();
-
+    
         if (!ParseChar('{'))
         {
             StopOnError("Expacted '{' arter if"); return false;
@@ -162,7 +187,7 @@ public class Analyzer
      
         if (ParseKeyWord("else"))
         {
-
+    
             if (ParseChar('{'))
             {
                 ParseOperators();

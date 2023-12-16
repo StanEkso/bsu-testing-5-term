@@ -1,4 +1,6 @@
-﻿namespace Calculator;
+﻿using SyntaxAnalyze.Tokens;
+
+namespace Calculator;
 
 public static class Calculator
 {
@@ -11,10 +13,11 @@ public static class Calculator
     {
         Stack<double> operands = new();
         Stack<char> operators = new();
-
+        
         for (var i = 0; i < source.Length; i++)
         {
             char suspect = source[i];
+            
             if (suspect == ' ') continue;
 
             if (suspect == '(')
