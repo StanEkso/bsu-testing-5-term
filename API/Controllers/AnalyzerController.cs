@@ -1,5 +1,5 @@
 ﻿using System.Net;
-using API.Dto;
+using API.DTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -8,9 +8,9 @@ namespace API.Controllers;
 public class AnalyzeController: ControllerBase
 {
     [HttpPost(Name = "")]
-    public ActionResult Analyze(AnalyzeCodeDto dto)
-    {
-        SyntaxAnalyze.Analyzer analyzer = new (dto.Code);
+    public ActionResult Analyze(AnalyzeDto dto)
+    { 
+        Execution.SyntaxAnalyze.Analyzer analyzer = new (dto.AnalyzeCode);
         bool valid = analyzer.Parse();
 
         if (!valid)

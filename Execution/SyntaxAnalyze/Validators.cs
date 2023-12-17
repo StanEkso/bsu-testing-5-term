@@ -1,4 +1,4 @@
-﻿namespace SyntaxAnalyze;
+﻿namespace Execution.SyntaxAnalyze;
 
 public static class Validators
 {
