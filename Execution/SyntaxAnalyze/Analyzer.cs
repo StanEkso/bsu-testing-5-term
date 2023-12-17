@@ -567,7 +567,7 @@ public class Analyzer
             }
             else
             {
-                def = variables[name];
+                def = GetVar(name, _funcName);
             }
 
             if (def != null) 
