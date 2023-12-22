@@ -195,6 +195,74 @@ public class Analyzer
 
         return true;
     }
+    
+    public bool ParseFor()
+    {
+        if (!ParseKeyWord("for"))
+        {
+            return false;
+        }
+
+        if (!ParseChar('('))
+        {
+            return StopOnError("Expected '(' after 'for'");
+        }
+        
+        if (ParseVarDeclarationInFor())
+        {
+        
+            if (!ParseLoopCondition())
+            {
+                return StopOnError("Invalid 'for' loop syntax");
+            }
+            
+            if (!ParseChar(';') || !ParseIncrementDecrement() || !ParseChar(')'))
+            {
+                return StopOnError("Invalid 'for' loop syntax");
+            }
+            
+            ParseBlock();
+            
+            return true;
+        }
+        
+        return StopOnError("Invalid variable declaration in 'for' loop");
+    }
+
+    private bool ParseVarDeclarationInFor()
+    {
+        return ParseKeyWord("var") && ParseVariableDeclaration() && ParseChar(';');
+    }
+
+    private bool ParseVariableDeclaration()
+    {
+        if (!ParseAssigment(isVarDeclare: true))
+        {
+            return StopOnError("Invalid variable declaration");
+        }
+        
+        while (ParseChar(','))
+        {
+            if (!ParseAssigment(isVarDeclare: true))
+            {
+                return StopOnError("Invalid variable declaration");
+            }
+        }
+        
+        return true;
+    }
+
+    private bool ParseLoopCondition()
+    {
+        ParseExpression();
+        CompiledCode.AddEndOfExpression();
+        return true;
+    }
+
+    private bool ParseIncrementDecrement()
+    {
+        return ParseUnaryIncrementDecrement();
+    }
 
     public bool ParseBlock(bool isVarsPossible = false)
     {
@@ -229,6 +297,10 @@ public class Analyzer
             if (!f)
             {
                 f = ParseWhile();
+            }
+            if (!f)
+            {
+                f = ParseFor();
             }
             if (!f)
             {
@@ -430,7 +502,6 @@ public class Analyzer
         }
     }
 
-
     private bool ParseExpression()
     {
         //if (ParseUnaryOperation())
@@ -461,7 +532,7 @@ public class Analyzer
 
         return true;
     }
-
+    
     private void SkipBlanks()
     {
         while (position < expression.Length && BlankSymbols.Contains(expression[position]))
@@ -616,6 +687,36 @@ public class Analyzer
         }
         CompiledCode.AddSetVar(name, def);
         return true;
+    }
+
+    private bool ParseUnaryIncrementDecrement()
+    {
+        string? name = ParseName();
+        if (name == null)
+        {
+            return false;
+        }
+
+        VariableDef? def = GetVar(name, _funcName);
+        if (def == null) // strict mode
+        {
+            StopOnError($"Variable is not declared: {name}"); return false;
+        }
+
+        if (ParseChars("++"))
+        {
+            CompiledCode.AddOperation("Unary++");
+            CompiledCode.AddSetVar(name, def);
+            return true;
+        }
+        
+        if (ParseChars("--"))
+        {
+            CompiledCode.AddOperation("Unary--");
+            CompiledCode.AddSetVar(name, def);
+            return true;
+        }
+        return false;
     }
 
 

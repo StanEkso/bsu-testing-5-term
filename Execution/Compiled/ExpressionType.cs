@@ -137,10 +137,10 @@ public static class TypeResolver
 
         if (type1 == ExpressionType.Int || type1 == ExpressionType.Double) 
         {
-            //if (operation == "++" || operation == "--")
-            //{
-            //    return type1;
-            //}
+            if (operation == "Unary++" || operation == "Unary--")
+            {
+                return type1;
+            }
 
             if (type2 == ExpressionType.Int || type2 == ExpressionType.Double)
             {

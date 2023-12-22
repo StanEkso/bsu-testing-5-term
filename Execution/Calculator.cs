@@ -306,6 +306,14 @@ public class Calculator
             {
                 res.intValue = +typedValue1.intValue;
             }
+            else if (typedValue1.type == ExpressionType.Int && operation == "Unary--")
+            {
+                res.intValue = typedValue1.intValue - 1;
+            }
+            else if (typedValue1.type == ExpressionType.Int && operation == "Unary++")
+            {
+                res.intValue = typedValue1.intValue + 1;
+            }
             else if (typedValue1.type == typedValue2.type && typedValue1.type == ExpressionType.Int)
             {
                 if (operation == "+") res.intValue = typedValue1.intValue + typedValue2.intValue;
@@ -326,6 +334,14 @@ public class Calculator
             else if (typedValue1.type == ExpressionType.Double && operation == "Unary+")
             {
                 res.doubleValue = +typedValue1.doubleValue;
+            }
+            else if (typedValue1.type == ExpressionType.Double && operation == "Unary--")
+            {
+                res.doubleValue = typedValue1.doubleValue - 1;
+            }
+            else if (typedValue1.type == ExpressionType.Double && operation == "Unary++")
+            {
+                res.doubleValue = typedValue1.doubleValue + 1;
             }
             else if (operation == "+") res.doubleValue = typedValue1.doubleValue + typedValue2.doubleValue;
             else if (operation == "-") res.doubleValue = typedValue1.doubleValue - typedValue2.doubleValue;
@@ -370,7 +386,7 @@ public class Calculator
        "<" or ">" or "==" or "!=" or "<=" or ">=" => 100,
        "+" or "-" => 200,
        "*" or "/" or "%" => 300,
-       "Unary-" or "Unary+" or "!" => 1000,
+       "Unary-" or "Unary+" or "!" or "Unary--" or "Unary++" => 1000,
         //EndOfExpression => 0, // needed as marker with priority 0 to evaluate operations in stack (...expression... {  } )
         "PrepareCall" => -1,
            _ => 0 //EndOfExpression => 0, // needed as marker with priority 0 to evaluate operations in stack (...expression... {  } )

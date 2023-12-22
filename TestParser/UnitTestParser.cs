@@ -14,7 +14,7 @@ public class Tests
         var x=14+4;
         x=x;
         """
-      , true)]
+      , false)]
     [TestCase(
         """
         var x=9;
@@ -23,23 +23,23 @@ public class Tests
         var z = 0;
         var z = 10;
         """
-      , true)]
+      , false)]
     [TestCase(
         """
         var  x = 2*6/2;
-        var x= 14 + 4;
+        var x = 14 + 4;
         var y= x + 1;
         var z = 0;
         z = 10;
         """
-        , true)]
+        , false)]
     [TestCase(
         """
         var x=-1;
         var x= 14 + 4;
         var y= x*(1+2/3) + 1;
         """
-        , true)]
+        , false)]
     [TestCase(
         """
         var x=0;
@@ -47,7 +47,7 @@ public class Tests
         var x = 1, z;
         var x, z=2;
         """
-        , true)]
+        , false)]
     [TestCase(
         """
         var x=3;
@@ -60,7 +60,7 @@ public class Tests
 
         x = f(1,2);
         """
-        , true)]
+        , false)]
     [TestCase(
         """
         function f(x,y)
@@ -97,7 +97,7 @@ public class Tests
         
         x = f(1,2) + f2 ( 1 ) ;
         """
-        , true)]
+        , false)]
     [TestCase(
         """
         function f2(x)
@@ -221,7 +221,6 @@ public class Tests
         }
         """, true)]
     public void ValidatesParse(string expression, bool expected)
-
     {
         var parser = new Analyzer(expression);
         bool actual = parser.Parse();
@@ -230,8 +229,46 @@ public class Tests
     }
     
     [TestCase(
+        """
+        var sum = 1;
+        for (var i=1; i<5; i++){
+            sum=sum+i;
+        }
+        return sum;
+        """, true)]
+    [TestCase(
+        """
+        for (var i=1; i<5; i++){
+            return i;
+        }
+        """, true)]
+    [TestCase(
+        """
+        var sum = 1;
+        for (var i = 5; i > 1; i--){
+            sum=sum-i;
+        }
+        return sum;
+        """, true)]
+    [TestCase(
+        """
+        for (var i=1; i<5; i++){
+            if (i == 4) {
+                return i;
+            }
+        }
+        """, true)]
+    public void ValidatesParseForLoop(string expression, bool expected)
+    {
+        var parser = new Analyzer(expression);
+        bool actualForLoop = parser.Parse();
+
+        Assert.That(actualForLoop, Is.EqualTo(expected));
+    }
+
+    [TestCase(
         "var x= 'abc';"
-        , true)] 
+        , true)]
     [TestCase(
         """
         var x=1;
